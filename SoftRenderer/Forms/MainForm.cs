@@ -24,7 +24,7 @@ namespace SoftRenderer.Forms
 
         private Image _texture = null;
         private int _count = 0;
-
+        private int runCount = 0;
         private Scene _scene;
 
         public MainForm()
@@ -78,19 +78,20 @@ namespace SoftRenderer.Forms
             return PeekMessage(out result, IntPtr.Zero, (uint)0, (uint)0, (uint)0) == 0;
         }
 
+        private Model _model;
         void Init()
         {
             //_texture = System.Drawing.Image.FromFile("../../Texture/texture.jpg");   
             _scene = new Scene();
 
-            Model m = new Model();
-            m.SetMesh(TestData.pointList, TestData.indexs);
-            m.pos = new Math.Vector3(0, 0, 10);
+            _model = new Model();
+            _model.SetMesh(TestData.pointList, TestData.indexs);
+            _model.pos = new Math.Vector3(0, 0, 10);
 
-            _scene.AddNode(m);
+            _scene.AddNode(_model);
 
             // 改用角度，不用弧度
-            Camera cam = new Camera(new Vector4(0, 0, 0, 1), new Vector4(0, 0, 1, 1), new Vector4(0, 1, 0, 0), 45, this.MaximumSize.Width / (float)this.MaximumSize.Height, 1f, 500f);
+            Camera cam = new Camera(new Vector4(5, 10, -10, 1), new Vector4(0, 0, 1, 1), new Vector4(0, 1, 0, 0), 45, this.MaximumSize.Width / (float)this.MaximumSize.Height, 1f, 500f);
             _scene.SetActiveCamera(cam);
 
             
@@ -98,6 +99,14 @@ namespace SoftRenderer.Forms
 
         void Update()
         {
+            runCount++;
+            if (runCount % 15 == 0)
+            {
+                _count++;
+                _count = _count % 10;
+                _model.pos = new Math.Vector3(0, 0, _count);
+                runCount = 0;
+            }
             
         }
 
