@@ -92,7 +92,7 @@ namespace SoftRenderer.Renderer
             return false;
         }
 
-        private void PerspectiveDivision(Vertex v)
+        private void PerspectiveDivision( Vertex v)
         {
             if (v.pos.w != 0)
             {
@@ -139,14 +139,14 @@ namespace SoftRenderer.Renderer
             }
 
             // 透视除法, cvv : x,y,z : [-1,1]
-            PerspectiveDivision(vertex0);
-            PerspectiveDivision(vertex1);
-            PerspectiveDivision(vertex2);
+            PerspectiveDivision( vertex0);
+            PerspectiveDivision( vertex1);
+            PerspectiveDivision( vertex2);
 
             // cvv到屏幕坐标
-            TransformToScreen(vertex0);
-            TransformToScreen(vertex1);
-            TransformToScreen(vertex2);
+            TransformToScreen( vertex0);
+            TransformToScreen( vertex1);
+            TransformToScreen( vertex2);
 
 
             //再渲染

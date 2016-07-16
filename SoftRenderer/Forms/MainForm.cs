@@ -80,25 +80,24 @@ namespace SoftRenderer.Forms
 
         void Init()
         {
-
-            //Console.WriteLine("11");
             //_texture = System.Drawing.Image.FromFile("../../Texture/texture.jpg");   
-            //建立一个scene,add node 
             _scene = new Scene();
 
             Model m = new Model();
             m.SetMesh(TestData.pointList, TestData.indexs);
-            m.pos = new Math.Vector3(0, 0, -10);
+            m.pos = new Math.Vector3(0, 0, 10);
 
             _scene.AddNode(m);
 
-            Camera cam = new Camera(new Vector4(0, 0, 0, 1), new Vector4(0, 0, -1, 1), new Vector4(0, 1, 0, 0), (float)System.Math.PI / 4, this.MaximumSize.Width / (float)this.MaximumSize.Height, 1f, 500f);
+            // 改用角度，不用弧度
+            Camera cam = new Camera(new Vector4(0, 0, 0, 1), new Vector4(0, 0, 1, 1), new Vector4(0, 1, 0, 0), 45, this.MaximumSize.Width / (float)this.MaximumSize.Height, 1f, 500f);
             _scene.SetActiveCamera(cam);
+
+            
         }
 
         void Update()
         {
-            
             
         }
 
@@ -107,13 +106,6 @@ namespace SoftRenderer.Forms
 
             _canvasGrapClear.Clear(Color.Black);
 
-            
-            
-
-            //_count++;
-            //_count = _count % this.MaximumSize.Width;
-            //// 往canvas画东西
-            //_canvasGrapDraw.DrawImage(_texture, _count, 0);
             _scene.Draw();
 
             _screenGrapDraw.DrawImage(_canvasBuff, 0, 0);

@@ -121,11 +121,15 @@ namespace SoftRenderer.Math
                           float upX, float upY, float upZ)
         {
 
-            Vector4 eye = new Vector4(eyePositionX, eyePositionY, eyePositionZ, 0);
+            Vector4 eye = new Vector4(eyePositionX, eyePositionY, eyePositionZ, 1);
             Vector4 target = new Vector4(targetPositionX, targetPositionY, targetPositionZ, 1);
             Vector4 up = new Vector4(upX, upY, upZ, 0);
             up.Normalize();
+            // 如果是zaxis = targetPos - eye的话，那么就是eye 指向 targetPos 的方向是Camera的forward方向，
+            // 但是，Camera的Back方向才是真正看物体的方向。(OpenGl), 那就是，targetPos 执行eye 的方向才是看物体的方向。
+            //Vector4 zaxis = target - eye;
 
+            // 这个是与上面相反，那么，看物体的方向就是，eye 指向 targetPos 的方向。(GamePlay的做法)
             Vector4 zaxis = eye - target;
             zaxis.Normalize();
 
@@ -160,6 +164,7 @@ namespace SoftRenderer.Math
         public void CreatePerspective(float fieldOfView, float aspectRatio,
                                      float zNearPlane, float zFarPlane)
         {
+            this.SetZero();
             float f_n = 1.0f / (zFarPlane - zNearPlane);
             // 当使用Math类的三角函数的时候，所有的单位都是用弧度表示的
             float theta = MathUtil.ConvertDegreesToRadians(fieldOfView) * 0.5f;
@@ -175,12 +180,32 @@ namespace SoftRenderer.Math
         public static Vector4 operator *(Matrix4x4 matrix, Vector4 v)
         {
             Vector4 res = new Vector4();
-            float x = v.x * matrix.m[0] + v.y * matrix.m[4] + v.z * matrix.m[8] + v.w * matrix.m[12];
-            float y = v.x * matrix.m[1] + v.y * matrix.m[5] + v.z * matrix.m[9] + v.w * matrix.m[13];
-            float z = v.x * matrix.m[2] + v.y * matrix.m[6] + v.z * matrix.m[10] + v.w * matrix.m[14];
-            float w = v.x * matrix.m[3] + v.y * matrix.m[7] + v.z * matrix.m[11] + v.w * matrix.m[15];
+            res.x = v.x * matrix.m[0] + v.y * matrix.m[4] + v.z * matrix.m[8] + v.w * matrix.m[12];
+            res.y = v.x * matrix.m[1] + v.y * matrix.m[5] + v.z * matrix.m[9] + v.w * matrix.m[13];
+            res.z = v.x * matrix.m[2] + v.y * matrix.m[6] + v.z * matrix.m[10] + v.w * matrix.m[14];
+            res.w = v.x * matrix.m[3] + v.y * matrix.m[7] + v.z * matrix.m[11] + v.w * matrix.m[15];
+            
             return res;
         }
 
+        public void SetZero()
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                m[i] = 0;
+            }
+        }
+
+
+        public void CreateRotationY(float angle)
+        {
+            float c = (float)System.Math.Cos(angle);
+            float s = (float)System.Math.Sin(angle);
+
+            m[0]  = c;
+            m[2]  = -s;
+            m[8]  = s;
+            m[10] = c;
+        }
     }
 }
