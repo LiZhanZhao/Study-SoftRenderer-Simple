@@ -37,8 +37,9 @@ namespace SoftRenderer.Renderer
                     {
                         Model model = node as Model;
                         Mesh mesh = model.GetMesh();
+                        Material material = model.GetMaterial();
                         // 进行draw
-                        Renderer.Instance().Draw(mesh.GetVertices(), mesh.GetTriangles(), worldMat, viewMat, projMat);
+                        Renderer.Instance().Draw(mesh.GetVertices(), mesh.GetTriangles(), worldMat, viewMat, projMat, material);
                     }
                 }
             }

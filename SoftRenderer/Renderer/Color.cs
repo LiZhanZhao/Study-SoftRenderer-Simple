@@ -4,16 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using SoftRenderer.Math;
-
 namespace SoftRenderer.Renderer
 {
-    struct Vertex
+    //[0-1] 的颜色
+    class Color
     {
-        public Vector4 pos;
-        public Vector2 uv;
-        public Vector4 normal;
-        public Color color;
-
+        public float r;
+        public float g;
+        public float b;
+        public float a;
     }
 }

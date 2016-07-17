@@ -41,7 +41,7 @@ namespace SoftRenderer.Forms
         private void InitForm()
         {
             this.Text = "SfRenderer";
-            this.BackColor = Color.Black;
+            this.BackColor = System.Drawing.Color.Black;
             this.MaximumSize = new System.Drawing.Size(800, 600);
             this.MinimumSize = new System.Drawing.Size(800, 600);
         }
@@ -113,7 +113,7 @@ namespace SoftRenderer.Forms
         void Render()
         {
 
-            _canvasGrapClear.Clear(Color.Black);
+            _canvasGrapClear.Clear(System.Drawing.Color.Black);
 
             _scene.Draw();
 

@@ -10,10 +10,12 @@ namespace SoftRenderer.Renderer
     class Model : Node
     {
         private Mesh _mesh;
+        private Material _material;
 
         public Model()
         {
             _mesh = null;
+            _material = new Material();
         }
 
         public void SetMesh(Vertex[] v, int[] indexs)
@@ -36,6 +38,16 @@ namespace SoftRenderer.Renderer
         public Mesh GetMesh()
         {
             return _mesh;
+        }
+
+        public void SetMaterial(Material mat)
+        {
+            _material = mat;
+        }
+
+        public Material GetMaterial()
+        {
+            return _material;
         }
     }
 }
