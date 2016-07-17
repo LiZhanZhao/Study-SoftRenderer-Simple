@@ -71,18 +71,28 @@ namespace SoftRenderer.Renderer
 
                     DrawTrangle(vertex0, vertex1, vertex2, m, v, p);
                 }
-
-                
-
-
             }
             
         }
 
-        // 因为是类似openGl的方式，所以，x,y,z都是[-1,1]
+        private bool BackFaceCulling(Vertex p1, Vertex p2, Vertex p3)
+        {
+            Vector4 v1 = p2.pos - p1.pos;
+            Vector4 v2 = p3.pos - p2.pos;
+            Vector4 normal = Vector4.Cross(v1, v2);
+            //由于在视空间中，所以相机点就是（0,0,0）
+            Vector4 viewDir = p1.pos - new Vector4(0, 0, 0, 1);
+            if (Vector4.Dot(normal, viewDir) < 0)
+            {
+                return true;
+            }
+            return false;
+            
+        }
+
+
         private bool Clip(Vertex v)
         {
-            //open cvv为 x:-1,1  y:-1,1  z:-1,1
             if (v.pos.x >= -v.pos.w && v.pos.x <= v.pos.w &&
                 v.pos.y >= -v.pos.w && v.pos.y <= v.pos.w &&
                 v.pos.z >= -v.pos.w && v.pos.z <= v.pos.w)
@@ -124,7 +134,10 @@ namespace SoftRenderer.Renderer
             vertex2.pos = v * vertex2.pos;
 
             //在相机空间进行背面消隐
-            // 暂定
+            if (BackFaceCulling(vertex0, vertex1, vertex2))
+            {
+                return;
+            }
 
 
             // 投影变换,cvv : x,y,z : [-w, w]
