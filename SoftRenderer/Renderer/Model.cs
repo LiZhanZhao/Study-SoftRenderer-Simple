@@ -23,13 +23,14 @@ namespace SoftRenderer.Renderer
             _mesh = new Mesh(v, indexs);
         }
 
-        public void SetMesh(Vector4[] posList, int[] indexs)
+        public void SetMesh(Vector4[] posList, Vector2[] uvList, int[] indexs)
         {
             List<Vertex> vertexList = new List<Vertex>();
             for (int i = 0; i < posList.Length; i++)
             {
                 Vertex v = new Vertex();
                 v.pos = posList[i];
+                v.uv = uvList[i];
                 vertexList.Add(v);
             }
             SetMesh(vertexList.ToArray(), indexs);

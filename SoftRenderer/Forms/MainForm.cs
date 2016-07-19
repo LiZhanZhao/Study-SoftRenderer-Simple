@@ -21,6 +21,7 @@ namespace SoftRenderer.Forms
         private Graphics _canvasGrapDraw = null;
         // 这个才是与屏幕有关的
         private Graphics _screenGrapDraw = null;
+        private float[,] _zBuff;
 
         private Image _texture = null;
         private int _count = 0;
@@ -31,7 +32,9 @@ namespace SoftRenderer.Forms
         {
             InitForm();
             InitCanvasAndGraphics();
+            InitZBuff();
             InitRenderer();
+
             Application.Idle += HandleApplicationIdle;
             Init();
             
@@ -44,6 +47,8 @@ namespace SoftRenderer.Forms
             this.BackColor = System.Drawing.Color.Black;
             this.MaximumSize = new System.Drawing.Size(800, 600);
             this.MinimumSize = new System.Drawing.Size(800, 600);
+            
+            
         }
 
         private void InitCanvasAndGraphics()
@@ -54,11 +59,23 @@ namespace SoftRenderer.Forms
             _screenGrapDraw = CreateGraphics();
         }
 
+        private void InitZBuff()
+        {
+            _zBuff = new float[this.MaximumSize.Height, this.MaximumSize.Width];
+        }
+
+        private void Clear()
+        {
+            Array.Clear(_zBuff, 0, _zBuff.Length);
+            _canvasGrapClear.Clear(System.Drawing.Color.Black);
+        }
         private void InitRenderer()
         {
-            Renderer.Renderer.Instance().SetRenderMode(RenderMode.Wireframe);
+            //Renderer.Renderer.Instance().SetRenderMode(RenderMode.Wireframe);
+            Renderer.Renderer.Instance().SetRenderMode(RenderMode.Textured);
             Renderer.Renderer.Instance().SetCanvasBuff(_canvasBuff);
             Renderer.Renderer.Instance().SetScreenWidthHeight(this.MaximumSize.Width, this.MaximumSize.Height);
+            Renderer.Renderer.Instance().SetZBuff(_zBuff);
         }
 
         void HandleApplicationIdle(object sender, EventArgs e)
@@ -85,8 +102,12 @@ namespace SoftRenderer.Forms
             _scene = new Scene();
 
             _model = new Model();
-            _model.SetMesh(TestData.pointList, TestData.indexs);
+            _model.SetMesh(TestData.pointList, TestData.uvs, TestData.indexs);
             _model.pos = new Math.Vector3(0, 0, 10);
+
+            Material mat = new Material("../../Texture/texture.jpg");
+            _model.SetMaterial(mat);
+
 
             _scene.AddNode(_model);
 
@@ -113,7 +134,7 @@ namespace SoftRenderer.Forms
         void Render()
         {
 
-            _canvasGrapClear.Clear(System.Drawing.Color.Black);
+            Clear();
 
             _scene.Draw();
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SoftRenderer.Math
 {
-    class Vector2
+    public struct Vector2
     {
         public float x;
         public float y;
@@ -15,6 +15,22 @@ namespace SoftRenderer.Math
         {
             this.x = x;
             this.y = y;
+        }
+
+        public static Vector2 operator *(Vector2 lhs, float rhs)
+        {
+            Vector2 v = new Vector2();
+            v.x = lhs.x * rhs;
+            v.y = lhs.y * rhs;
+            return v;
+        }
+
+        public static Vector2 operator /(Vector2 lhs, float rhs)
+        {
+            Vector2 v = new Vector2();
+            v.x = lhs.x / rhs;
+            v.y = lhs.y / rhs;
+            return v;
         }
     }
 }

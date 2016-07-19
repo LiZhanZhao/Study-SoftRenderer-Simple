@@ -24,6 +24,21 @@ namespace SoftRenderer.Renderer
         VertexColor
     }
 
+    /// <summary>
+    /// 纹理过滤模式
+    /// </summary>
+    public enum TextureFilterMode
+    {
+        /// <summary>
+        /// 点采样
+        /// </summary>
+        point,
+        /// <summary>
+        /// 双线性采样
+        /// </summary>
+        Bilinear
+    }
+
     class Renderer
     {
         private static Renderer _instance = null;
@@ -49,11 +64,27 @@ namespace SoftRenderer.Renderer
         }
 
         private int _screenWidth, _screenHeight;
+        
         public void SetScreenWidthHeight(int w, int h)
         {
             _screenWidth = w;
             _screenHeight = h;
         }
+
+        private float[,] _zBuff;
+        public void SetZBuff(float[,] buff)
+        {
+            _zBuff = buff;
+        }
+
+        
+        private TextureFilterMode _textureFilterMode = TextureFilterMode.point;
+        public void SetTextureFilterMode(TextureFilterMode mode)
+        {
+            _textureFilterMode = mode;
+        }
+
+        
 
         public void Draw(Vertex[] vertices, int[] triangles, Matrix4x4 m, Matrix4x4 v, Matrix4x4 p, Material material)
         {
@@ -102,7 +133,7 @@ namespace SoftRenderer.Renderer
             return false;
         }
 
-        private void PerspectiveDivision( Vertex v)
+        private void PerspectiveDivision(ref Vertex v)
         {
             if (v.pos.w != 0)
             {
@@ -113,7 +144,7 @@ namespace SoftRenderer.Renderer
             }
         }
 
-        private void TransformToScreen(Vertex v)
+        private void TransformToScreen(ref Vertex v)
         {
             v.pos.x = (v.pos.x + 1) * 0.5f * this._screenWidth;
             v.pos.y = (1 - v.pos.y) * 0.5f * this._screenHeight;
@@ -152,14 +183,14 @@ namespace SoftRenderer.Renderer
             }
 
             // 透视除法, cvv : x,y,z : [-1,1]
-            PerspectiveDivision( vertex0);
-            PerspectiveDivision( vertex1);
-            PerspectiveDivision( vertex2);
+            PerspectiveDivision(ref vertex0);
+            PerspectiveDivision(ref vertex1);
+            PerspectiveDivision(ref vertex2);
 
             // cvv到屏幕坐标
-            TransformToScreen( vertex0);
-            TransformToScreen( vertex1);
-            TransformToScreen( vertex2);
+            TransformToScreen(ref vertex0);
+            TransformToScreen(ref vertex1);
+            TransformToScreen(ref vertex2);
 
 
             //渲染
@@ -171,7 +202,7 @@ namespace SoftRenderer.Renderer
             }
             else if(_renderMode == RenderMode.Textured)
             {
-
+                TriangleRasterization(vertex0, vertex1, vertex2, material);
             }
             
 
@@ -244,40 +275,40 @@ namespace SoftRenderer.Renderer
 
         }
 
-        /*
-        private void TriangleRasterization(Vertex p1, Vertex p2, Vertex p3)
+
+        private void TriangleRasterization(Vertex p1, Vertex p2, Vertex p3, Material material)
         {
             if (p1.pos.y == p2.pos.y)
             {
                 if (p1.pos.y < p3.pos.y)
                 {//平顶
-                    DrawTriangleTop(p1, p2, p3);
+                    DrawTriangleTop(p1, p2, p3, material);
                 }
                 else
                 {//平底
-                    DrawTriangleBottom(p3, p1, p2);
+                    DrawTriangleBottom(p3, p1, p2, material);
                 }
             }
             else if (p1.pos.y == p3.pos.y)
             {
                 if (p1.pos.y < p2.pos.y)
                 {//平顶
-                    DrawTriangleTop(p1, p3, p2);
+                    DrawTriangleTop(p1, p3, p2, material);
                 }
                 else
                 {//平底
-                    DrawTriangleBottom(p2, p1, p3);
+                    DrawTriangleBottom(p2, p1, p3, material);
                 }
             }
             else if (p2.pos.y == p3.pos.y)
             {
                 if (p2.pos.y < p1.pos.y)
                 {//平顶
-                    DrawTriangleTop(p2, p3, p1);
+                    DrawTriangleTop(p2, p3, p1, material);
                 }
                 else
                 {//平底
-                    DrawTriangleBottom(p1, p2, p3);
+                    DrawTriangleBottom(p1, p2, p3, material);
                 }
             }
             else
@@ -335,27 +366,54 @@ namespace SoftRenderer.Renderer
                 //插值生成左右顶点
                 // 生成新的middle顶点
                 Vertex newMiddle = new Vertex();
+
                 newMiddle.pos.x = middlex;
                 newMiddle.pos.y = middle.pos.y;
-                //MathUntil.ScreenSpaceLerpVertex(ref newMiddle, top, bottom, t);
-                // 插值生成
 
+                // 插值生成
+                ScreenSpaceLerpVertex(ref newMiddle, top, bottom, t);
 
                 //平底
-                DrawTriangleBottom(top, newMiddle, middle);
+                DrawTriangleBottom(top, newMiddle, middle, material);
                 //平顶
-                DrawTriangleTop(newMiddle, middle, bottom);
+                DrawTriangleTop(newMiddle, middle, bottom, material);
             }
         }
 
-        
+        // 变换到屏幕的x',y'，与自身的1/z成正比，与自身的u/z，v/z成正比，可以证明
+        // 例如: x1'和x2’之间的xm',
+        // 线性关系 : xm' = x1' * t + (1- t) * x2'
 
-        private void DrawTriangleTop(Vertex p1, Vertex p2, Vertex p3)
+        // xm'的1/zm 与1/z1,1/z2成正比，
+        // 线性关系 : 1/zm = 1/z1 * t + (1- t) * 1/z2
+
+        // xm'的um/zm 与 u1/z1, u2/z2成正比
+        // 线性关系 : um/zm = u1/z1 * t + (1- t) * u2/z2
+
+        // 需要注意的就是，t是屏幕的x1'和x2'坐标的比值
+        public static void ScreenSpaceLerpVertex(ref Vertex v, Vertex v1, Vertex v2, float t)
+        {
+            float onePreZ_Top = 1 / v1.pos.z;
+            float onePreZ_Bottom = 1 / v2.pos.z;
+            float onePreZ_Middle = MathUtil.Lerp(onePreZ_Top, onePreZ_Bottom, t);
+
+            v.pos.z = 1 / onePreZ_Middle;
+
+            Vector2 uvPreZ_Top = new Vector2(v1.uv.x * onePreZ_Top, v1.uv.y * onePreZ_Top);
+            Vector2 uvPreZ_Bottom = new Vector2(v2.uv.x * onePreZ_Bottom, v2.uv.y * onePreZ_Bottom);
+            Vector2 uvPreZ_Middle = MathUtil.Lerp(uvPreZ_Top, uvPreZ_Bottom, t);
+            Vector2 uv = uvPreZ_Middle / onePreZ_Middle;
+
+            v.uv = uv;
+        }
+
+
+        private void DrawTriangleTop(Vertex p1, Vertex p2, Vertex p3, Material material)
         {
             for (float y = p1.pos.y; y <= p3.pos.y; y += 0.5f)
             {
                 int yIndex = (int)(System.Math.Round(y, MidpointRounding.AwayFromZero));
-                if (yIndex >= 0 && yIndex < this.MaximumSize.Height)
+                if (yIndex >= 0 && yIndex < this._screenHeight)
                 {
                     // 公式
                     float xl = (y - p1.pos.y) * (p3.pos.x - p1.pos.x) / (p3.pos.y - p1.pos.y) + p1.pos.x;
@@ -369,34 +427,33 @@ namespace SoftRenderer.Renderer
                     Vertex new1 = new Vertex();
                     new1.pos.x = xl;
                     new1.pos.y = y;
-
-                    // 线性插值其他的属性，例如uv，lightColor
                     // t 是 屏幕的 x'或者是y'的比例,就是三角形的pos映射到屏幕的pos'的x',y'
-                    MathUntil.ScreenSpaceLerpVertex(ref new1, p1, p3, t);
-                    //
+                    ScreenSpaceLerpVertex(ref new1, p1, p3, t);
+                    
                     Vertex new2 = new Vertex();
                     new2.pos.x = xr;
                     new2.pos.y = y;
-                    MathUntil.ScreenSpaceLerpVertex(ref new2, p2, p3, t);
+                    ScreenSpaceLerpVertex(ref new2, p2, p3, t);
+
                     //扫描线填充
                     if (new1.pos.x < new2.pos.x)
                     {
-                        ScanlineFill(new1, new2, yIndex);
+                        ScanlineFill(new1, new2, yIndex, material);
                     }
                     else
                     {
-                        ScanlineFill(new2, new1, yIndex);
+                        ScanlineFill(new2, new1, yIndex, material);
                     }
                 }
             }
         }
 
-        private void DrawTriangleBottom(Vertex p1, Vertex p2, Vertex p3)
+        private void DrawTriangleBottom(Vertex p1, Vertex p2, Vertex p3, Material material)
         {
             for (float y = p1.pos.y; y <= p2.pos.y; y += 0.5f)
             {
                 int yIndex = (int)(System.Math.Round(y, MidpointRounding.AwayFromZero));
-                if (yIndex >= 0 && yIndex < this.MaximumSize.Height)
+                if (yIndex >= 0 && yIndex < this._screenHeight)
                 {
                     float xl = (y - p1.pos.y) * (p2.pos.x - p1.pos.x) / (p2.pos.y - p1.pos.y) + p1.pos.x;
                     float xr = (y - p1.pos.y) * (p3.pos.x - p1.pos.x) / (p3.pos.y - p1.pos.y) + p1.pos.x;
@@ -407,27 +464,26 @@ namespace SoftRenderer.Renderer
                     Vertex new1 = new Vertex();
                     new1.pos.x = xl;
                     new1.pos.y = y;
-                    // t 是 屏幕的 x'或者是y'的比例
-                    MathUntil.ScreenSpaceLerpVertex(ref new1, p1, p2, t);
-                    //
+                    ScreenSpaceLerpVertex(ref new1, p1, p2, t);
+                    
                     Vertex new2 = new Vertex();
                     new2.pos.x = xr;
                     new2.pos.y = y;
-                    MathUntil.ScreenSpaceLerpVertex(ref new2, p1, p3, t);
+                    ScreenSpaceLerpVertex(ref new2, p1, p3, t);
                     //扫描线填充
                     if (new1.pos.x < new2.pos.x)
                     {
-                        ScanlineFill(new1, new2, yIndex);
+                        ScanlineFill(new1, new2, yIndex, material);
                     }
                     else
                     {
-                        ScanlineFill(new2, new1, yIndex);
+                        ScanlineFill(new2, new1, yIndex, material);
                     }
                 }
             }
         }
 
-        private void ScanlineFill(Vertex left, Vertex right, int yIndex)
+        private void ScanlineFill(Vertex left, Vertex right, int yIndex, Material material)
         {
             float dx = right.pos.x - left.pos.x;
             float step = 1;
@@ -438,7 +494,7 @@ namespace SoftRenderer.Renderer
             for (float x = left.pos.x; x <= right.pos.x; x += 0.5f)
             {
                 int xIndex = (int)(x + 0.5f);
-                if (xIndex >= 0 && xIndex < this.MaximumSize.Width)
+                if (xIndex >= 0 && xIndex < this._screenWidth)
                 {
                     float lerpFactor = 0;
                     if (dx != 0)
@@ -447,28 +503,35 @@ namespace SoftRenderer.Renderer
                         lerpFactor = (x - left.pos.x) / dx;
                     }
                     //1/z’与x’和y'是线性关系的
-                    float onePreZ = MathUntil.Lerp(left.onePerZ, right.onePerZ, lerpFactor);
-                    if (onePreZ >= _zBuff[yIndex, xIndex])//使用1/z进行深度测试
-                    {//通过测试
-                        // 原来的z
-                        float w = 1 / onePreZ;
+                    float onePreZ_Left = 1 / left.pos.z;
+                    float onePreZ_Right = 1 / right.pos.z;
+                    float onePreZ = MathUtil.Lerp(onePreZ_Left, onePreZ_Right, lerpFactor);
+
+                    //使用1/z进行深度测试
+                    //通过测试
+                    if (onePreZ >= _zBuff[yIndex, xIndex])
+                    {
+                        
                         _zBuff[yIndex, xIndex] = onePreZ;
                         //uv 插值，求纹理颜色，s/z 与x' 成正比
-                        float u = MathUntil.Lerp(left.u, right.u, lerpFactor) * w * (_texture.Width - 1);
-                        float v = MathUntil.Lerp(left.v, right.v, lerpFactor) * w * (_texture.Height - 1);
+                        float u = MathUtil.Lerp(left.uv.x, right.uv.x, lerpFactor) * (_screenWidth - 1);
+                        float v = MathUtil.Lerp(left.uv.y, right.uv.y, lerpFactor) * (_screenHeight - 1);
 
                         //纹理采样
-                        SoftRenderer.RenderData.Color texColor = new RenderData.Color(1, 1, 1);
+                        Color texColor = new Color(1, 1, 1, 1);
 
+                        Bitmap mainTexture = material.GetMainTexture();
                         //点采样
                         if (_textureFilterMode == TextureFilterMode.point)
                         {
                             int uIndex = (int)System.Math.Round(u, MidpointRounding.AwayFromZero);
                             int vIndex = (int)System.Math.Round(v, MidpointRounding.AwayFromZero);
-                            uIndex = MathUntil.Range(uIndex, 0, _texture.Width - 1);
-                            vIndex = MathUntil.Range(vIndex, 0, _texture.Height - 1);
+                            uIndex = MathUtil.Clamp(uIndex, 0, _screenWidth - 1);
+                            vIndex = MathUtil.Clamp(vIndex, 0, _screenHeight - 1);
                             //uv坐标系采用dx风格
-                            texColor = new RenderData.Color(ReadTexture(uIndex, vIndex));//转到我们自定义的color进行计算
+                            //转到我们自定义的color进行计算
+                            System.Drawing.Color originCol = ReadTexture(uIndex, vIndex, mainTexture);
+                            texColor = new Color(originCol);
                         }
                         //双线性采样
                         else if (_textureFilterMode == TextureFilterMode.Bilinear)
@@ -480,48 +543,60 @@ namespace SoftRenderer.Renderer
                             float dv = v - vIndex;
 
                             // 双线性插值
-                            SoftRenderer.RenderData.Color texcolor1 = new RenderData.Color(ReadTexture((int)uIndex, (int)vIndex)) * (1 - du) * (1 - dv);
-                            SoftRenderer.RenderData.Color texcolor2 = new RenderData.Color(ReadTexture((int)uIndex + 1, (int)vIndex)) * du * (1 - dv);
-                            SoftRenderer.RenderData.Color texcolor3 = new RenderData.Color(ReadTexture((int)uIndex, (int)vIndex + 1)) * (1 - du) * dv;
-                            SoftRenderer.RenderData.Color texcolor4 = new RenderData.Color(ReadTexture((int)uIndex + 1, (int)vIndex + 1)) * du * dv;
+                            Color texcolor1 = new Color(ReadTexture((int)uIndex, (int)vIndex, mainTexture)) * (1 - du) * (1 - dv);
+                            Color texcolor2 = new Color(ReadTexture((int)uIndex + 1, (int)vIndex, mainTexture)) * du * (1 - dv);
+                            Color texcolor3 = new Color(ReadTexture((int)uIndex, (int)vIndex + 1, mainTexture)) * (1 - du) * dv;
+                            Color texcolor4 = new Color(ReadTexture((int)uIndex + 1, (int)vIndex + 1, mainTexture)) * du * dv;
                             texColor = texcolor1 + texcolor2 + texcolor3 + texcolor4;
                         }
 
-                        //插值顶点颜色
-                        SoftRenderer.RenderData.Color vertColor = MathUntil.Lerp(left.vcolor, right.vcolor, lerpFactor) * w;
-                        //插值光照颜色
-                        SoftRenderer.RenderData.Color lightColor = MathUntil.Lerp(left.lightingColor, right.lightingColor, lerpFactor) * w; ;
-
-
-                        if (_lightMode == LightMode.On)
-                        {//光照模式，需要混合光照的颜色
-                            if (RenderMode.Textured == _currentMode)
-                            {
-                                SoftRenderer.RenderData.Color finalColor = texColor * lightColor;
-                                _frameBuff.SetPixel(xIndex, yIndex, finalColor.TransFormToSystemColor());
-                            }
-                            else if (RenderMode.VertexColor == _currentMode)
-                            {
-                                SoftRenderer.RenderData.Color finalColor = vertColor * lightColor;
-                                _frameBuff.SetPixel(xIndex, yIndex, finalColor.TransFormToSystemColor());
-                            }
-                        }
-                        else
+                        if (_renderMode == RenderMode.Textured)
                         {
-                            if (RenderMode.Textured == _currentMode)
-                            {
-                                _frameBuff.SetPixel(xIndex, yIndex, texColor.TransFormToSystemColor());
-                            }
-                            else if (RenderMode.VertexColor == _currentMode)
-                            {
-                                _frameBuff.SetPixel(xIndex, yIndex, vertColor.TransFormToSystemColor());
-                            }
+                            _canvasBuff.SetPixel(xIndex, yIndex, texColor.TransFormToSystemColor());
                         }
+
+                        //插值顶点颜色
+                        //SoftRenderer.RenderData.Color vertColor = MathUntil.Lerp(left.vcolor, right.vcolor, lerpFactor) * w;
+                        //插值光照颜色
+                        //SoftRenderer.RenderData.Color lightColor = MathUntil.Lerp(left.lightingColor, right.lightingColor, lerpFactor) * w; ;
+
+
+                        //if (_lightMode == LightMode.On)
+                        //{//光照模式，需要混合光照的颜色
+                        //    if (RenderMode.Textured == _currentMode)
+                        //    {
+                        //        SoftRenderer.RenderData.Color finalColor = texColor * lightColor;
+                        //        _frameBuff.SetPixel(xIndex, yIndex, finalColor.TransFormToSystemColor());
+                        //    }
+                        //    else if (RenderMode.VertexColor == _currentMode)
+                        //    {
+                        //        SoftRenderer.RenderData.Color finalColor = vertColor * lightColor;
+                        //        _frameBuff.SetPixel(xIndex, yIndex, finalColor.TransFormToSystemColor());
+                        //    }
+                        //}
+                        //else
+                        //{
+                        //    if (RenderMode.Textured == _currentMode)
+                        //    {
+                        //        _frameBuff.SetPixel(xIndex, yIndex, texColor.TransFormToSystemColor());
+                        //    }
+                        //    else if (RenderMode.VertexColor == _currentMode)
+                        //    {
+                        //        _frameBuff.SetPixel(xIndex, yIndex, vertColor.TransFormToSystemColor());
+                        //    }
+                        //}
                     }
+                    
                 }
             }
 
         }
-         * */
+
+        private System.Drawing.Color ReadTexture(int uIndex, int vIndex, Bitmap tex)
+        {
+            int u = MathUtil.Clamp(uIndex, 0, tex.Width - 1);
+            int v = MathUtil.Clamp(vIndex, 0, tex.Height - 1);
+            return tex.GetPixel(u, v);
+        }
     }
 }
