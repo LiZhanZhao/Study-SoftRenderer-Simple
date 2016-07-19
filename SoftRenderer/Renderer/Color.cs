@@ -57,7 +57,8 @@ namespace SoftRenderer.Renderer
             float g = this.g * 255;
             float b = this.b * 255;
             float a = this.a * 255;
-            return System.Drawing.Color.FromArgb((int)r, (int)g, (int)b, (int)a);
+            return System.Drawing.Color.FromArgb((int)a, (int)r, (int)g, (int)b);
+            //return System.Drawing.Color.FromArgb((int)r, (int)g, (int)b);
         }
     }
 }

@@ -26,10 +26,12 @@ namespace SoftRenderer.Renderer
         public void SetMesh(Vector4[] posList, Vector2[] uvList, int[] indexs)
         {
             List<Vertex> vertexList = new List<Vertex>();
-            for (int i = 0; i < posList.Length; i++)
+            // 这里就根据indexs来构造所有的三角形的顶点列表，UV是针对于每一个三角形的
+            for (int i = 0; i < indexs.Length; i++)
             {
                 Vertex v = new Vertex();
-                v.pos = posList[i];
+                int index = indexs[i];
+                v.pos = posList[index];
                 v.uv = uvList[i];
                 vertexList.Add(v);
             }

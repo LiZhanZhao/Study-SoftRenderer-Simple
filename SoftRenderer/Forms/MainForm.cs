@@ -133,11 +133,11 @@ namespace SoftRenderer.Forms
 
         void Render()
         {
-
+            //if (_count == 1)
+            //    return;
+            //_count++;
             Clear();
-
             _scene.Draw();
-
             _screenGrapDraw.DrawImage(_canvasBuff, 0, 0);
         }
 

@@ -86,19 +86,15 @@ namespace SoftRenderer.Renderer
 
         
 
-        public void Draw(Vertex[] vertices, int[] triangles, Matrix4x4 m, Matrix4x4 v, Matrix4x4 p, Material material)
+        public void Draw(Vertex[] vertices, Matrix4x4 m, Matrix4x4 v, Matrix4x4 p, Material material)
         {
             if (_canvasBuff != null)
             {
-                for (int tri = 0; tri < triangles.Length / 3; tri++)
+                for (int i = 0; i < vertices.Length / 3; i++)
                 {
-                    int triIndex0 = triangles[tri * 3];
-                    int triIndex1 = triangles[tri * 3 + 1];
-                    int triIndex2 = triangles[tri * 3 + 2];
-
-                    Vertex vertex0 = vertices[triIndex0];
-                    Vertex vertex1 = vertices[triIndex1];
-                    Vertex vertex2 = vertices[triIndex2];
+                    Vertex vertex0 = vertices[i * 3];
+                    Vertex vertex1 = vertices[i * 3 + 1];
+                    Vertex vertex2 = vertices[i * 3 + 2];
 
                     DrawTrangle(vertex0, vertex1, vertex2, m, v, p, material);
                 }
@@ -373,10 +369,11 @@ namespace SoftRenderer.Renderer
                 // 插值生成
                 ScreenSpaceLerpVertex(ref newMiddle, top, bottom, t);
 
-                //平底
-                DrawTriangleBottom(top, newMiddle, middle, material);
                 //平顶
                 DrawTriangleTop(newMiddle, middle, bottom, material);
+                //平底
+                DrawTriangleBottom(top, newMiddle, middle, material);
+                
             }
         }
 
@@ -464,6 +461,7 @@ namespace SoftRenderer.Renderer
                     Vertex new1 = new Vertex();
                     new1.pos.x = xl;
                     new1.pos.y = y;
+
                     ScreenSpaceLerpVertex(ref new1, p1, p2, t);
                     
                     Vertex new2 = new Vertex();
@@ -513,22 +511,21 @@ namespace SoftRenderer.Renderer
                     {
                         
                         _zBuff[yIndex, xIndex] = onePreZ;
+                        Bitmap mainTexture = material.GetMainTexture();
                         //uv 插值，求纹理颜色，s/z 与x' 成正比
-                        float u = MathUtil.Lerp(left.uv.x, right.uv.x, lerpFactor) * (_screenWidth - 1);
-                        float v = MathUtil.Lerp(left.uv.y, right.uv.y, lerpFactor) * (_screenHeight - 1);
+                        float u = MathUtil.Lerp(left.uv.x / left.pos.z, right.uv.x / right.pos.z, lerpFactor) / onePreZ * (mainTexture.Width - 1);
+                        float v = MathUtil.Lerp(left.uv.y / left.pos.z, right.uv.y / right.pos.z, lerpFactor) / onePreZ * (mainTexture.Height - 1);
 
                         //纹理采样
                         Color texColor = new Color(1, 1, 1, 1);
-
-                        Bitmap mainTexture = material.GetMainTexture();
+                        
                         //点采样
                         if (_textureFilterMode == TextureFilterMode.point)
                         {
                             int uIndex = (int)System.Math.Round(u, MidpointRounding.AwayFromZero);
                             int vIndex = (int)System.Math.Round(v, MidpointRounding.AwayFromZero);
-                            uIndex = MathUtil.Clamp(uIndex, 0, _screenWidth - 1);
-                            vIndex = MathUtil.Clamp(vIndex, 0, _screenHeight - 1);
-                            //uv坐标系采用dx风格
+                            uIndex = MathUtil.Clamp(uIndex, 0, mainTexture.Width - 1);
+                            vIndex = MathUtil.Clamp(vIndex, 0, mainTexture.Height - 1);
                             //转到我们自定义的color进行计算
                             System.Drawing.Color originCol = ReadTexture(uIndex, vIndex, mainTexture);
                             texColor = new Color(originCol);

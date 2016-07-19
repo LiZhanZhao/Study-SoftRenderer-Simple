@@ -27,25 +27,26 @@ namespace SoftRenderer.Renderer
         public static Vector2[] uvs ={
                                   new Vector2(0, 0),new Vector2( 0, 1),new Vector2(1, 1),
                                    new Vector2(0, 0),new Vector2(1, 1),new Vector2(1, 0),
-                                   
+                                   //
                                     new Vector2(0, 0),new Vector2( 0, 1),new Vector2(1, 1),
                                    new Vector2(0, 0),new Vector2(1, 1),new Vector2(1, 0),
-                                   
+                                   //
                                     new Vector2(0, 0),new Vector2( 0, 1),new Vector2(1, 1),
                                    new Vector2(0, 0),new Vector2(1, 1),new Vector2(1, 0),
-                                   
+                                   //
                                     new Vector2(0, 0),new Vector2( 0, 1),new Vector2(1, 1),
                                    new Vector2(0, 0),new Vector2(1, 1),new Vector2(1, 0),
-                                   
+                                   //
                                      new Vector2(0, 0),new Vector2( 0, 1),new Vector2(1, 1),
                                    new Vector2(0, 0),new Vector2(1, 1),new Vector2(1, 0),
-                                   
+                                   ///
                                      new Vector2(0, 0),new Vector2( 0, 1),new Vector2(1, 1),
                                    new Vector2(0, 0),new Vector2(1, 1),new Vector2(1, 0)
                               };
 
         //三角形顶点索引 12个面
-        public static int[] indexs = {   0,1,2,
+        public static int[] indexs = {
+                                    0,1,2,
                                    0,2,3,
                                    //
                                    7,6,5,
