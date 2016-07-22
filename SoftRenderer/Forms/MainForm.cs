@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 
 using SoftRenderer.Renderer;
 using SoftRenderer.Math;
+using SoftRenderer.Rasterizetion;
 namespace SoftRenderer.Forms
 {
     class MainForm : Form
@@ -33,7 +34,9 @@ namespace SoftRenderer.Forms
             InitForm();
             InitCanvasAndGraphics();
             InitZBuff();
-            InitRenderer();
+            //InitRenderer();
+
+
 
             Application.Idle += HandleApplicationIdle;
             Init();
@@ -69,14 +72,16 @@ namespace SoftRenderer.Forms
             Array.Clear(_zBuff, 0, _zBuff.Length);
             _canvasGrapClear.Clear(System.Drawing.Color.Black);
         }
-        private void InitRenderer()
-        {
-            //Renderer.Renderer.Instance().SetRenderMode(RenderMode.Wireframe);
-            Renderer.Renderer.Instance().SetRenderMode(RenderMode.Textured);
-            Renderer.Renderer.Instance().SetCanvasBuff(_canvasBuff);
-            Renderer.Renderer.Instance().SetScreenWidthHeight(this.MaximumSize.Width, this.MaximumSize.Height);
-            Renderer.Renderer.Instance().SetZBuff(_zBuff);
-        }
+        //private void InitRenderer()
+        //{
+        //    Renderer.Renderer.Instance().SetRenderMode(RenderMode.Wireframe);
+        //    Renderer.Renderer.Instance().SetRenderMode(RenderMode.Textured);
+        //    Renderer.Renderer.Instance().SetCanvasBuff(_canvasBuff);
+        //    Renderer.Renderer.Instance().SetScreenWidthHeight(this.MaximumSize.Width, this.MaximumSize.Height);
+        //    Renderer.Renderer.Instance().SetZBuff(_zBuff);
+
+            
+        //}
 
         void HandleApplicationIdle(object sender, EventArgs e)
         {
@@ -98,16 +103,18 @@ namespace SoftRenderer.Forms
         private Model _model;
         void Init()
         {
-            //_texture = System.Drawing.Image.FromFile("../../Texture/texture.jpg");   
-            _scene = new Scene();
+            Util.screenWidth = this.MaximumSize.Width;
+            Util.screenHeight = this.MaximumSize.Height;
+            RenderTarget target = new ScreenRenderTarget(_canvasBuff);
+            Rasterizer.Instance().SetRenderTarget(target);
 
+            _scene = new Scene();
             _model = new Model();
             _model.SetMesh(TestData.pointList, TestData.uvs, TestData.indexs);
             _model.pos = new Math.Vector3(0, 0, 10);
 
-            Material mat = new Material("../../Texture/texture.jpg");
-            _model.SetMaterial(mat);
-
+            //Material mat = new Material("../../Texture/texture.jpg");
+            //_model.SetMaterial(mat);
 
             _scene.AddNode(_model);
 
@@ -133,9 +140,6 @@ namespace SoftRenderer.Forms
 
         void Render()
         {
-            //if (_count == 1)
-            //    return;
-            //_count++;
             Clear();
             _scene.Draw();
             _screenGrapDraw.DrawImage(_canvasBuff, 0, 0);

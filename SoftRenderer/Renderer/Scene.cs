@@ -38,8 +38,10 @@ namespace SoftRenderer.Renderer
                         Model model = node as Model;
                         Mesh mesh = model.GetMesh();
                         Material material = model.GetMaterial();
-                        // 进行draw
-                        Renderer.Instance().Draw(mesh.GetVertices(), worldMat, viewMat, projMat, material);
+                        Vertex[] vertexList = mesh.GetVertices();
+                        Util.TransitionVertexList(ref vertexList, worldMat, viewMat, projMat);
+                        Rasterizetion.Rasterizer.Instance().Render(Rasterizetion.PrimitiveMode.Triangles, vertexList);
+
                     }
                 }
             }

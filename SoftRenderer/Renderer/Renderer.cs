@@ -102,6 +102,7 @@ namespace SoftRenderer.Renderer
             
         }
 
+
         private bool BackFaceCulling(Vertex p1, Vertex p2, Vertex p3)
         {
             Vector4 v1 = p2.pos - p1.pos;
@@ -192,9 +193,9 @@ namespace SoftRenderer.Renderer
             //渲染
             if (_renderMode == RenderMode.Wireframe)
             {
-                BresenhamDrawLine(vertex0, vertex1);
-                BresenhamDrawLine(vertex1, vertex2);
-                BresenhamDrawLine(vertex2, vertex0);
+                //BresenhamDrawLine(vertex0, vertex1);
+                //BresenhamDrawLine(vertex1, vertex2);
+                //BresenhamDrawLine(vertex2, vertex0);
             }
             else if(_renderMode == RenderMode.Textured)
             {
@@ -204,72 +205,72 @@ namespace SoftRenderer.Renderer
 
         }
 
-        private void BresenhamDrawLine(Vertex p1, Vertex p2)
-        {
-            int x = (int)(System.Math.Round(p1.pos.x, MidpointRounding.AwayFromZero));
-            int y = (int)(System.Math.Round(p1.pos.y, MidpointRounding.AwayFromZero));
-            int dx = (int)(System.Math.Round(p2.pos.x - p1.pos.x, MidpointRounding.AwayFromZero));
-            int dy = (int)(System.Math.Round(p2.pos.y - p1.pos.y, MidpointRounding.AwayFromZero));
-            int stepx = 1;
-            int stepy = 1;
+        //private void BresenhamDrawLine(Vertex p1, Vertex p2)
+        //{
+        //    int x = (int)(System.Math.Round(p1.pos.x, MidpointRounding.AwayFromZero));
+        //    int y = (int)(System.Math.Round(p1.pos.y, MidpointRounding.AwayFromZero));
+        //    int dx = (int)(System.Math.Round(p2.pos.x - p1.pos.x, MidpointRounding.AwayFromZero));
+        //    int dy = (int)(System.Math.Round(p2.pos.y - p1.pos.y, MidpointRounding.AwayFromZero));
+        //    int stepx = 1;
+        //    int stepy = 1;
 
-            if (dx >= 0)
-            {
-                stepx = 1;
-            }
-            else
-            {
-                stepx = -1;
-                dx = System.Math.Abs(dx);
-            }
+        //    if (dx >= 0)
+        //    {
+        //        stepx = 1;
+        //    }
+        //    else
+        //    {
+        //        stepx = -1;
+        //        dx = System.Math.Abs(dx);
+        //    }
 
-            if (dy >= 0)
-            {
-                stepy = 1;
-            }
-            else
-            {
-                stepy = -1;
-                dy = System.Math.Abs(dy);
-            }
+        //    if (dy >= 0)
+        //    {
+        //        stepy = 1;
+        //    }
+        //    else
+        //    {
+        //        stepy = -1;
+        //        dy = System.Math.Abs(dy);
+        //    }
 
-            int dx2 = 2 * dx;
-            int dy2 = 2 * dy;
+        //    int dx2 = 2 * dx;
+        //    int dy2 = 2 * dy;
 
-            if (dx > dy)
-            {
-                int error = dy2 - dx;
-                for (int i = 0; i <= dx; i++)
-                {
-                    _canvasBuff.SetPixel(x, y, System.Drawing.Color.White);
-                    if (error >= 0)
-                    {
-                        error -= dx2;
-                        y += stepy;
-                    }
-                    error += dy2;
-                    x += stepx;
+        //    if (dx > dy)
+        //    {
+        //        int error = dy2 - dx;
+        //        for (int i = 0; i <= dx; i++)
+        //        {
+        //            _canvasBuff.SetPixel(x, y, System.Drawing.Color.White);
+        //            if (error >= 0)
+        //            {
+        //                error -= dx2;
+        //                y += stepy;
+        //            }
+        //            error += dy2;
+        //            x += stepx;
 
-                }
-            }
-            else
-            {
-                int error = dx2 - dy;
-                for (int i = 0; i <= dy; i++)
-                {
-                    _canvasBuff.SetPixel(x, y, System.Drawing.Color.White);
-                    if (error >= 0)
-                    {
-                        error -= dy2;
-                        x += stepx;
-                    }
-                    error += dx2;
-                    y += stepy;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        int error = dx2 - dy;
+        //        for (int i = 0; i <= dy; i++)
+        //        {
+        //            _canvasBuff.SetPixel(x, y, System.Drawing.Color.White);
+        //            if (error >= 0)
+        //            {
+        //                error -= dy2;
+        //                x += stepx;
+        //            }
+        //            error += dx2;
+        //            y += stepy;
 
-                }
-            }
+        //        }
+        //    }
 
-        }
+        //}
 
 
         private void TriangleRasterization(Vertex p1, Vertex p2, Vertex p3, Material material)
