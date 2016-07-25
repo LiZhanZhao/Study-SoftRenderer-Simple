@@ -19,8 +19,16 @@ namespace SoftRenderer.Renderer
 
         public Mesh(Vertex[] v, int[] indexs)
         {
-            _vertices.AddRange(v);
-            _triangles.AddRange(indexs);
+            if (v != null)
+            {
+                _vertices.AddRange(v);
+            }
+            
+            if (indexs != null)
+            {
+                _triangles.AddRange(indexs);
+            }
+            
         }
 
         public Vertex[] GetVertices()

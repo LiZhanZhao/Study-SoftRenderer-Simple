@@ -39,8 +39,8 @@ namespace SoftRenderer.Renderer
                         Mesh mesh = model.GetMesh();
                         Material material = model.GetMaterial();
                         Vertex[] vertexList = mesh.GetVertices();
-                        Util.TransitionVertexList(ref vertexList, worldMat, viewMat, projMat);
-                        Rasterizetion.Rasterizer.Instance().Render(Rasterizetion.PrimitiveMode.Triangles, vertexList);
+                        //Util.TransitionVertexList(ref vertexList, worldMat, viewMat, projMat);
+                        //Rasterizetion.Rasterizer.Instance().Render(Rasterizetion.PrimitiveMode.Lines, vertexList);
 
                     }
                 }

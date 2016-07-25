@@ -10,7 +10,13 @@ namespace SoftRenderer.Renderer
 {
     class TestData
     {
-        
+        // 顶点数据
+        public static Vertex[] vertexList = {
+                                                new Vertex(new Vector4(0,  0, 0, 1)),
+                                                new Vertex(new Vector4(100, 100, 0, 1)),
+                                                new Vertex(new Vector4(100, 100, 0, 1)),
+                                                new Vertex(new Vector4(200, 100, 1, 1)),
+                                            };
 
         //顶点坐标
         public static Vector4[] pointList = {

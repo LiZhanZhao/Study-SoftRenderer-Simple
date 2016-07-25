@@ -103,30 +103,31 @@ namespace SoftRenderer.Forms
         private Model _model;
         void Init()
         {
-            Util.screenWidth = this.MaximumSize.Width;
-            Util.screenHeight = this.MaximumSize.Height;
+            //Util.screenWidth = this.MaximumSize.Width;
+            //Util.screenHeight = this.MaximumSize.Height;
             RenderTarget target = new ScreenRenderTarget(_canvasBuff);
             Rasterizer.Instance().SetRenderTarget(target);
 
-            _scene = new Scene();
-            _model = new Model();
-            _model.SetMesh(TestData.pointList, TestData.uvs, TestData.indexs);
-            _model.pos = new Math.Vector3(0, 0, 10);
+            //_scene = new Scene();
+            //_model = new Model();
+            //_model.SetMesh(TestData.pointList, TestData.uvs, TestData.indexs);
+            //_model.pos = new Math.Vector3(0, 0, 10);
 
             //Material mat = new Material("../../Texture/texture.jpg");
             //_model.SetMaterial(mat);
 
-            _scene.AddNode(_model);
+            //_scene.AddNode(_model);
 
             // 改用角度，不用弧度
-            Camera cam = new Camera(new Vector4(5, 10, -10, 1), new Vector4(0, 0, 1, 1), new Vector4(0, 1, 0, 0), 45, this.MaximumSize.Width / (float)this.MaximumSize.Height, 1f, 500f);
-            _scene.SetActiveCamera(cam);
+            //Camera cam = new Camera(new Vector4(5, 10, -10, 1), new Vector4(0, 0, 1, 1), new Vector4(0, 1, 0, 0), 45, this.MaximumSize.Width / (float)this.MaximumSize.Height, 1f, 500f);
+            //_scene.SetActiveCamera(cam);
 
             
         }
 
         void Update()
         {
+            /*
             runCount++;
             if (runCount % 15 == 0)
             {
@@ -135,13 +136,20 @@ namespace SoftRenderer.Forms
                 _model.pos = new Math.Vector3(0, 0, _count);
                 runCount = 0;
             }
+             * */
             
         }
 
         void Render()
         {
             Clear();
-            _scene.Draw();
+            //_scene.Draw();
+
+            // 划线
+            Rasterizetion.Rasterizer.Instance().Render(Rasterizetion.PrimitiveMode.Lines, TestData.vertexList);
+
+            // 划三角形
+
             _screenGrapDraw.DrawImage(_canvasBuff, 0, 0);
         }
 
