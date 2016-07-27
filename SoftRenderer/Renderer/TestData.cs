@@ -11,12 +11,22 @@ namespace SoftRenderer.Renderer
     class TestData
     {
         // 顶点数据
-        public static Vertex[] vertexList = {
+        public static Vertex[] lineVertexList = {
                                                 new Vertex(new Vector4(0,  0, 0, 1), new Color(1, 0, 0, 1)),
                                                 new Vertex(new Vector4(100, 100, 0, 1), new Color(1, 1, 1, 1)),
                                                 new Vertex(new Vector4(100, 100, 0, 1), new Color(1, 1, 1, 1)),
                                                 new Vertex(new Vector4(200, 100, 1, 1), new Color(0, 0, 1, 1)),
                                             };
+
+        public static Vertex[] triVertexList = {
+                                                   new Vertex(new Vector4(0,  0, 0, 1), new Color(1, 0, 0, 1)),
+                                                   new Vertex(new Vector4(0,  100, 0, 1), new Color(0, 1, 0, 1)),
+                                                   new Vertex(new Vector4(100,  100, 0, 1), new Color(0, 0, 1, 1)),
+
+                                                   new Vertex(new Vector4(300,  300, 0, 1), new Color(1, 0, 0, 1)),
+                                                   new Vertex(new Vector4(200,  350, 0, 1), new Color(0, 1, 0, 1)),
+                                                   new Vertex(new Vector4(250,  400, 0, 1), new Color(0, 0, 1, 1))
+                                               };
 
         //顶点坐标
         public static Vector4[] pointList = {

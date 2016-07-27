@@ -33,7 +33,7 @@ namespace SoftRenderer.Forms
         {
             InitForm();
             InitCanvasAndGraphics();
-            InitZBuff();
+            //InitZBuff();
             //InitRenderer();
 
 
@@ -69,7 +69,7 @@ namespace SoftRenderer.Forms
 
         private void Clear()
         {
-            Array.Clear(_zBuff, 0, _zBuff.Length);
+            //Array.Clear(_zBuff, 0, _zBuff.Length);
             _canvasGrapClear.Clear(System.Drawing.Color.Black);
         }
         //private void InitRenderer()
@@ -107,6 +107,7 @@ namespace SoftRenderer.Forms
             //Util.screenHeight = this.MaximumSize.Height;
             RenderTarget target = new ScreenRenderTarget(_canvasBuff);
             Rasterizer.Instance().SetRenderTarget(target);
+            Rasterizer.Instance().SetScreenWidthHeight(this.MaximumSize.Width, this.MaximumSize.Height);
 
             //_scene = new Scene();
             //_model = new Model();
@@ -146,10 +147,10 @@ namespace SoftRenderer.Forms
             //_scene.Draw();
 
             // 画线
-            Rasterizetion.Rasterizer.Instance().Render(Rasterizetion.PrimitiveMode.Lines, TestData.vertexList);
+            //Rasterizetion.Rasterizer.Instance().Render(Rasterizetion.PrimitiveMode.Lines, TestData.lineVertexList);
 
             // 画三角形
-
+            Rasterizetion.Rasterizer.Instance().Render(Rasterizetion.PrimitiveMode.Triangles, TestData.triVertexList);
 
             _screenGrapDraw.DrawImage(_canvasBuff, 0, 0);
         }
