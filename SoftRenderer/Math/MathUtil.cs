@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
+using SoftRenderer.Renderer;
 namespace SoftRenderer.Math
 {
     class MathUtil
@@ -29,6 +29,17 @@ namespace SoftRenderer.Math
             res.x = MathUtil.Lerp(a.x, b.x, t);
             res.y = MathUtil.Lerp(a.y, b.y, t);
             return res;
+        }
+
+        public static Color Lerp(Color c1, Color c2, float t)
+        {
+            Color col = new Color();
+            col.r = MathUtil.Lerp(c1.r, c2.r, t);
+            col.g = MathUtil.Lerp(c1.g, c2.g, t);
+            col.b = MathUtil.Lerp(c1.b, c2.b, t);
+            col.a = MathUtil.Lerp(c1.a, c2.a, t);
+            return col;
+
         }
 
         public static int Clamp(int v, int min, int max)

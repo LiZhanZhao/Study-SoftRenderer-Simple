@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using SoftRenderer.Renderer;
-
+using SoftRenderer.Math;
 namespace SoftRenderer.Rasterizetion
 {
     public enum PrimitiveMode
@@ -50,9 +50,9 @@ namespace SoftRenderer.Rasterizetion
                 Vertex vertex1 = vertex[i * 3 + 1];
                 Vertex vertex2 = vertex[i * 3 + 2];
 
-                BresenhamDrawLine(vertex0, vertex1);
-                BresenhamDrawLine(vertex1, vertex2);
-                BresenhamDrawLine(vertex2, vertex0);
+                //BresenhamDrawLine(vertex0, vertex1);
+                //BresenhamDrawLine(vertex1, vertex2);
+                //BresenhamDrawLine(vertex2, vertex0);
             }
         }
 
@@ -79,6 +79,7 @@ namespace SoftRenderer.Rasterizetion
             int dy = (int)(System.Math.Round(p2.pos.y - p1.pos.y, MidpointRounding.AwayFromZero));
             int stepx = 1;
             int stepy = 1;
+
 
             if (dx >= 0)
             {
@@ -108,10 +109,11 @@ namespace SoftRenderer.Rasterizetion
                 int error = dy2 - dx;
                 for (int i = 0; i <= dx; i++)
                 {
-                    //_canvasBuff.SetPixel(x, y, System.Drawing.Color.White);
-                    if (_renderTarget != null)
+                    if (_renderTarget != null && dx != 0)
                     {
-                        _renderTarget.Write(x, y, System.Drawing.Color.White);
+                        float t = i / (float)dx;
+                        Color resCol = MathUtil.Lerp(p1.color, p2.color, t);
+                        _renderTarget.Write(x, y, resCol.TransFormToSystemColor());
                     }
 
                     if (error >= 0)
@@ -129,10 +131,11 @@ namespace SoftRenderer.Rasterizetion
                 int error = dx2 - dy;
                 for (int i = 0; i <= dy; i++)
                 {
-                    //_canvasBuff.SetPixel(x, y, System.Drawing.Color.White);
-                    if (_renderTarget != null)
+                    if (_renderTarget != null && dy != 0)
                     {
-                        _renderTarget.Write(x, y, System.Drawing.Color.White);
+                        float t = i / (float)dy;
+                        Color resCol = MathUtil.Lerp(p1.color, p2.color, t);
+                        _renderTarget.Write(x, y, resCol.TransFormToSystemColor());
                     }
 
                     if (error >= 0)

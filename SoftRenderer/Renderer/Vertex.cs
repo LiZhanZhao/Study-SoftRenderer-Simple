@@ -30,6 +30,15 @@ namespace SoftRenderer.Renderer
             this.normal = new Vector4();
             this.color = new Color();
         }
+
+        public Vertex(Vector4 p, Color c)
+        {
+            this.pos = p;
+            this.color = c;
+            this.uv = new Vector2();
+            this.normal = new Vector4();
+            
+        }
     }
 
     

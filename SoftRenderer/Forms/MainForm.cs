@@ -145,10 +145,11 @@ namespace SoftRenderer.Forms
             Clear();
             //_scene.Draw();
 
-            // 划线
+            // 画线
             Rasterizetion.Rasterizer.Instance().Render(Rasterizetion.PrimitiveMode.Lines, TestData.vertexList);
 
-            // 划三角形
+            // 画三角形
+
 
             _screenGrapDraw.DrawImage(_canvasBuff, 0, 0);
         }
