@@ -105,9 +105,10 @@ namespace SoftRenderer.Forms
         {
             //Util.screenWidth = this.MaximumSize.Width;
             //Util.screenHeight = this.MaximumSize.Height;
-            RenderTarget target = new ScreenRenderTarget(_canvasBuff);
+            ScreenRenderTarget target = new ScreenRenderTarget(_canvasBuff);
+            target.SetScreenWidthHeight(this.MaximumSize.Width, this.MaximumSize.Height);
             Rasterizer.Instance().SetRenderTarget(target);
-            Rasterizer.Instance().SetScreenWidthHeight(this.MaximumSize.Width, this.MaximumSize.Height);
+            
 
             //_scene = new Scene();
             //_model = new Model();

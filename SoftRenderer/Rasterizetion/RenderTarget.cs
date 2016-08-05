@@ -9,5 +9,7 @@ namespace SoftRenderer.Rasterizetion
     public abstract class RenderTarget
     {
         virtual public void Write(int x, int y, System.Drawing.Color col){ }
+        virtual public int Width() { return 0; }
+        virtual public int Height() { return 0; }
     }
 }

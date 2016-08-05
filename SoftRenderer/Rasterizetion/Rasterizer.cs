@@ -29,12 +29,12 @@ namespace SoftRenderer.Rasterizetion
             return _instance;
         }
 
-        private int _screenWidth, _screenHeight;
-        public void SetScreenWidthHeight(int w, int h)
-        {
-            _screenWidth = w;
-            _screenHeight = h;
-        }
+        //private int _screenWidth, _screenHeight;
+        //public void SetScreenWidthHeight(int w, int h)
+        //{
+        //    _screenWidth = w;
+        //    _screenHeight = h;
+        //}
 
         public void Render(PrimitiveMode pm, Vertex[] vertexList)
         {
@@ -249,7 +249,7 @@ namespace SoftRenderer.Rasterizetion
             for (float y = p1.pos.y; y <= p3.pos.y; y += 0.5f)
             {
                 int yIndex = (int)(System.Math.Round(y, MidpointRounding.AwayFromZero));
-                if (yIndex >= 0 && yIndex < this._screenHeight)
+                if (yIndex >= 0 && yIndex < this._renderTarget.Height())
                 {
                     // 公式
                     float xl = (y - p1.pos.y) * (p3.pos.x - p1.pos.x) / (p3.pos.y - p1.pos.y) + p1.pos.x;
@@ -289,7 +289,7 @@ namespace SoftRenderer.Rasterizetion
             for (float y = p1.pos.y; y <= p2.pos.y; y += 0.5f)
             {
                 int yIndex = (int)(System.Math.Round(y, MidpointRounding.AwayFromZero));
-                if (yIndex >= 0 && yIndex < this._screenHeight)
+                if (yIndex >= 0 && yIndex < this._renderTarget.Height())
                 {
                     float xl = (y - p1.pos.y) * (p2.pos.x - p1.pos.x) / (p2.pos.y - p1.pos.y) + p1.pos.x;
                     float xr = (y - p1.pos.y) * (p3.pos.x - p1.pos.x) / (p3.pos.y - p1.pos.y) + p1.pos.x;
@@ -362,7 +362,7 @@ namespace SoftRenderer.Rasterizetion
             for (float x = left.pos.x; x <= right.pos.x; x += 0.5f)
             {
                 int xIndex = (int)(x + 0.5f);
-                if (xIndex >= 0 && xIndex < this._screenWidth)
+                if (xIndex >= 0 && xIndex < this._renderTarget.Width())
                 {
                     float lerpFactor = 0;
                     if (dx != 0)
