@@ -108,7 +108,9 @@ namespace SoftRenderer.Forms
             ScreenRenderTarget target = new ScreenRenderTarget(_canvasBuff);
             target.SetScreenWidthHeight(this.MaximumSize.Width, this.MaximumSize.Height);
             Rasterizer.Instance().SetRenderTarget(target);
-            
+
+            Rasterizer.Instance().SetVertexBuffer(TestData.triVertexList);
+            //Rasterizer.Instance().SetVertexBuffer(TestData.lineVertexList);
 
             //_scene = new Scene();
             //_model = new Model();
@@ -147,11 +149,12 @@ namespace SoftRenderer.Forms
             Clear();
             //_scene.Draw();
 
-            // 画线
-            //Rasterizetion.Rasterizer.Instance().Render(Rasterizetion.PrimitiveMode.Lines, TestData.lineVertexList);
+            
 
             // 画三角形
-            Rasterizetion.Rasterizer.Instance().Render(Rasterizetion.PrimitiveMode.Triangles, TestData.triVertexList);
+            Rasterizetion.Rasterizer.Instance().DrawArray(Rasterizetion.PrimitiveMode.Triangles);
+            // 画线
+            //Rasterizetion.Rasterizer.Instance().DrawArray(Rasterizetion.PrimitiveMode.Lines);
 
             _screenGrapDraw.DrawImage(_canvasBuff, 0, 0);
         }

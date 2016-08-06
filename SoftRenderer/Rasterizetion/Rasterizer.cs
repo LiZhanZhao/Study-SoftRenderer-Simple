@@ -20,6 +20,8 @@ namespace SoftRenderer.Rasterizetion
     {
         private static Rasterizer _instance = null;
         private RenderTarget _renderTarget = null;
+        private List<Vertex> _vertexBuffer = null;
+        private List<int> _indexBuffer = null;
         public static Rasterizer Instance()
         {
             if (_instance == null)
@@ -29,27 +31,37 @@ namespace SoftRenderer.Rasterizetion
             return _instance;
         }
 
-        //private int _screenWidth, _screenHeight;
-        //public void SetScreenWidthHeight(int w, int h)
-        //{
-        //    _screenWidth = w;
-        //    _screenHeight = h;
-        //}
+        public Rasterizer()
+        {
+            this._vertexBuffer = new List<Vertex>();
+            this._indexBuffer = new List<int>();
+        }
 
-        public void Render(PrimitiveMode pm, Vertex[] vertexList)
+        public void SetVertexBuffer(Vertex[] vertexs)
+        {
+            this._vertexBuffer.Clear();
+            this._vertexBuffer.AddRange(vertexs);
+        }
+        public void SetIndexBuffer(int[] indexs)
+        {
+            this._indexBuffer.Clear();
+            this._indexBuffer.AddRange(indexs);
+        }
+
+        public void DrawArray(PrimitiveMode pm)
         {
             if (pm == PrimitiveMode.Lines)
             {
-                this.RenderLines(vertexList);
+                this.DrawLines(_vertexBuffer.ToArray());
             }
             else if (pm == PrimitiveMode.Triangles)
             {
-                this.RenderTriangles(vertexList);
+                this.DrawTriangles(_vertexBuffer.ToArray());
             }
             
         }
 
-        void RenderTriangles(Vertex[] vertex)
+        void DrawTriangles(Vertex[] vertex)
         {
             for (int i = 0; i < vertex.Length / 3; i++)
             {
@@ -61,7 +73,7 @@ namespace SoftRenderer.Rasterizetion
             }
         }
 
-        void RenderLines(Vertex[] vertex)
+        void DrawLines(Vertex[] vertex)
         {
             for (int i = 0; i < vertex.Length / 2; i++)
             {
