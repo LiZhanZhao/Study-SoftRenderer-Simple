@@ -16,12 +16,15 @@ namespace SoftRenderer.Rasterizetion
 
     }
     // 光栅化类
+    // 1. 只接受[-1,1]之内的数据
     public class Rasterizer
     {
         private static Rasterizer _instance = null;
         private RenderTarget _renderTarget = null;
         private List<Vertex> _vertexBuffer = null;
         private List<int> _indexBuffer = null;
+
+        
         public static Rasterizer Instance()
         {
             if (_instance == null)
@@ -48,15 +51,49 @@ namespace SoftRenderer.Rasterizetion
             this._indexBuffer.AddRange(indexs);
         }
 
+        private Vertex TransformToScreen(Vertex v)
+        {
+            v.pos.x = (v.pos.x + 1) * 0.5f * this._renderTarget.Width();
+            //v.pos.y = (1 - v.pos.y) * 0.5f * this._renderTarget.Height();
+            v.pos.y = (1 - (v.pos.y + 1) * 0.5f) * this._renderTarget.Height();
+            return v;
+        }
+
+        private void ToScreen(List<Vertex> vertexList)
+        {
+            for (int i = 0; i < vertexList.Count; i++)
+            {
+                vertexList[i] = TransformToScreen(vertexList[i]);
+            }
+        }
+
         public void DrawArray(PrimitiveMode pm)
         {
+            List<Vertex> tempVertexList = new List<Vertex>();
+            // Clip
             if (pm == PrimitiveMode.Lines)
             {
-                this.DrawLines(_vertexBuffer.ToArray());
+
             }
             else if (pm == PrimitiveMode.Triangles)
             {
-                this.DrawTriangles(_vertexBuffer.ToArray());
+                //Vertex[] list = ClipTriangles(_vertexBuffer.ToArray());
+                //tempVertexList.AddRange(list);
+
+                tempVertexList.AddRange(_vertexBuffer.ToArray());
+            }
+            
+            // 从[-1,1] 变换到屏幕左边中
+            ToScreen(tempVertexList);
+
+
+            if (pm == PrimitiveMode.Lines)
+            {
+                this.DrawLines(tempVertexList.ToArray());
+            }
+            else if (pm == PrimitiveMode.Triangles)
+            {
+                this.DrawTriangles(tempVertexList.ToArray());
             }
             
         }
@@ -328,6 +365,7 @@ namespace SoftRenderer.Rasterizetion
                     {
                         ScanlineFill(new2, new1, yIndex);
                     }
+                    
                 }
             }
         }
@@ -389,7 +427,6 @@ namespace SoftRenderer.Rasterizetion
                             _renderTarget.Write(xIndex, yIndex, resCol.TransFormToSystemColor());
                         }
                     }
-
                     
 
                     /*
@@ -456,5 +493,195 @@ namespace SoftRenderer.Rasterizetion
             }
 
         }
+
+        private Vertex[] ClipTriangles(Vertex[] vertexs)
+        {
+            List<Vertex> resVertexList = new List<Vertex>();
+            for (int i = 0; i < vertexs.Length / 3; i++)
+            {
+                Vertex vertex0 = vertexs[i * 3];
+                Vertex vertex1 = vertexs[i * 3 + 1];
+                Vertex vertex2 = vertexs[i * 3 + 2];
+
+                HandleClipInTriangle(vertex0, vertex1, vertex2, resVertexList);
+            }
+            return resVertexList.ToArray();
+
+        }
+
+        const float CLIP_MIN = -1;
+        const float CLIP_MAX = 1;
+
+        // 目前对针对ndc立方体的near clip面进行裁剪，其他面只是简单的判断剔除或者不剔除
+        private void HandleClipInTriangle(Vertex v0, Vertex v1, Vertex v2, List<Vertex> vertexList)
+        {
+            bool xAxisMinConf = v0.pos.x < CLIP_MIN && v1.pos.x < CLIP_MIN && v2.pos.x < CLIP_MIN;
+            bool xAxisMaxConf = v0.pos.x > CLIP_MAX && v1.pos.x > CLIP_MAX && v2.pos.x > CLIP_MAX;
+            if (xAxisMinConf && xAxisMaxConf)
+            {
+                return;
+            }
+
+            bool yAxisMinConf = v0.pos.y < CLIP_MIN && v1.pos.y < CLIP_MIN && v2.pos.y < CLIP_MIN;
+            bool yAxisMaxConf = v0.pos.y > CLIP_MAX && v1.pos.y > CLIP_MAX && v2.pos.y > CLIP_MAX;
+            if (yAxisMinConf && yAxisMaxConf)
+            {
+                return;
+            }
+
+            bool zAxisMinConf = v0.pos.z < CLIP_MIN && v1.pos.z < CLIP_MIN && v2.pos.z < CLIP_MIN;
+            bool zAxisMaxConf = v0.pos.z > CLIP_MAX && v1.pos.z > CLIP_MAX && v2.pos.z > CLIP_MAX;
+            if (zAxisMinConf && zAxisMaxConf)
+            {
+                return;
+            }
+
+            bool zAxisInsideConf = (v0.pos.z >= CLIP_MIN && v0.pos.z <= CLIP_MAX) &&
+                (v1.pos.z >= CLIP_MIN && v1.pos.z <= CLIP_MAX) &&
+                (v2.pos.z >= CLIP_MIN && v2.pos.z <= CLIP_MAX);
+
+            Vertex[] vertexArr = new Vertex[3] { v0, v1, v2 };
+            // 近平面的裁剪
+            if (!zAxisInsideConf)
+            {
+                // 计算三角有多少个顶点在近平面内
+                
+                
+                int numVertexIn = 0;
+                if (v0.pos.z < CLIP_MIN){
+                    numVertexIn++;
+                    
+                }
+                if(v1.pos.z < CLIP_MIN){
+                    numVertexIn++;
+                    
+                }
+                if (v2.pos.z < CLIP_MIN){
+                    numVertexIn++;
+                    
+                }
+
+                if (numVertexIn == 1)
+                {
+                    // 保证vertex的顺序(顺时针，逆时针)
+                    // vIndex0 存储的就是在近平面里面的那个vertex的索引
+                    int vIndex0 = 0, vIndex1 = 1, vIndex2 = 2;
+                    if (v0.pos.z < CLIP_MIN)
+                    {
+                        vIndex0 = 0;
+                        vIndex1 = 1;
+                        vIndex2 = 2;
+                    }
+                    if (v1.pos.z < CLIP_MIN)
+                    {
+                        vIndex0 = 1;
+                        vIndex1 = 0;
+                        vIndex2 = 2;
+                    }
+                    if (v2.pos.z < CLIP_MIN)
+                    {
+                        vIndex0 = 2;
+                        vIndex1 = 0;
+                        vIndex2 = 1;
+                    }
+                    
+                    // 计算第一个交点
+                    Vector4 pos01 = vertexArr[vIndex1].pos - vertexArr[vIndex0].pos;
+                    float t = (CLIP_MIN - v0.pos.z) / pos01.z;
+                    float xPos0 = v0.pos.x + pos01.x * t;
+                    float yPos0 = v0.pos.y + pos01.y * t;
+
+                    vertexArr[vIndex1].pos.x = xPos0;
+                    vertexArr[vIndex1].pos.y = yPos0;
+                    vertexArr[vIndex1].pos.z = CLIP_MIN;
+
+                    // 计算第二个交点
+                    Vector4 pos02 = vertexArr[vIndex2].pos - vertexArr[vIndex0].pos;
+                    t = (CLIP_MIN - v0.pos.z) / pos02.z;
+                    float xPos1 = v0.pos.x + pos02.x * t;
+                    float yPos1 = v0.pos.y + pos02.y * t;
+
+                    vertexArr[vIndex2].pos.x = xPos1;
+                    vertexArr[vIndex2].pos.y = yPos1;
+                    vertexArr[vIndex2].pos.z = CLIP_MIN;
+
+                    // 以后要计算UV,normal
+                    // ...
+                    vertexList.AddRange(vertexArr.ToArray());
+
+                }
+                else if (numVertexIn == 2)
+                {
+
+                    // vIndex0保存的就是在近平面外面的顶点索引
+                    int vIndex0 = 0, vIndex1 = 1, vIndex2 = 2;
+                    if (v0.pos.z >= CLIP_MIN)
+                    {
+                        vIndex0 = 0;
+                        vIndex1 = 1;
+                        vIndex2 = 2;
+                    }
+                    if (v1.pos.z >= CLIP_MIN)
+                    {
+                        vIndex0 = 1;
+                        vIndex1 = 0;
+                        vIndex2 = 2;
+                    }
+                    if (v2.pos.z >= CLIP_MIN)
+                    {
+                        vIndex0 = 2;
+                        vIndex1 = 0;
+                        vIndex2 = 1;
+
+                    }
+
+                    // 计算第一个交点
+                    Vector4 pos01 = vertexArr[vIndex1].pos - vertexArr[vIndex0].pos;
+                    float t = (CLIP_MIN - v0.pos.z) / pos01.z;
+                    float xPos0 = v0.pos.x + pos01.x * t;
+                    float yPos0 = v0.pos.y + pos01.y * t;
+
+                    // 计算第二个交点
+                    Vector4 pos02 = vertexArr[vIndex2].pos - vertexArr[vIndex0].pos;
+                    t = (CLIP_MIN - v0.pos.z) / pos02.z;
+                    float xPos1 = v0.pos.x + pos02.x * t;
+                    float yPos1 = v0.pos.y + pos02.y * t;
+
+                    // 以后要计算UV,normal
+                    // ...
+                    
+
+                    // 这里会经过近平面截之后，三角形会变成了一个四边形，那么四边形就分成2个三角形
+                    // 第一个三角形: vertexArr[vIndex0] = 第一个交点 + vertexArr[vIndex1](原来的) + vertexArr[vIndex2](原来的)
+                    // 第二个三角形: vertexArr[vIndex0] = 第二个交点 + vertexArr[vIndex1] = 第一个交点 + vertexArr[vIndex2](原来的)
+
+                    vertexArr[vIndex0].pos.x = xPos0;
+                    vertexArr[vIndex0].pos.y = yPos0;
+                    vertexArr[vIndex0].pos.z = CLIP_MIN;
+
+                    vertexList.AddRange(vertexArr.ToArray());
+
+                    // 第二个三角形
+                    Vertex[] vertexArrTemp = new Vertex[3] { v0, v1, v2 };
+                    vertexArrTemp[vIndex0].pos.x = xPos1;
+                    vertexArrTemp[vIndex0].pos.y = yPos1;
+                    vertexArrTemp[vIndex0].pos.z = CLIP_MIN;
+
+                    vertexArrTemp[vIndex1].pos.x = xPos0;
+                    vertexArrTemp[vIndex1].pos.y = yPos0;
+                    vertexArrTemp[vIndex1].pos.z = CLIP_MIN;
+
+                    vertexList.AddRange(vertexArrTemp.ToArray());
+                }
+            }
+            else
+            {
+                vertexList.AddRange(vertexArr.ToArray());
+            }
+        }
+
+
+
+
     }
 }
