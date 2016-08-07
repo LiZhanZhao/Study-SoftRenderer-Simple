@@ -19,13 +19,15 @@ namespace SoftRenderer.Renderer
                                             };
         
         public static Vertex[] triVertexList = {
-                                                   //new Vertex(new Vector4(-1,  -1f, 0, 1), new Color(1, 0, 0, 1)),
-                                                   //new Vertex(new Vector4(-1,  1f, 0, 1), new Color(0, 1, 0, 1)),
-                                                   //new Vertex(new Vector4(1,  -1f, 0, 1), new Color(0, 0, 1, 1)),
+                                                   new Vertex(new Vector4(-0.1f,  0.5f, 0, 1), new Color(1, 0, 0, 1)),
+                                                   new Vertex(new Vector4(-0.1f,  0, -2, 1), new Color(0, 1, 0, 1)),
+                                                   new Vertex(new Vector4(-0.5f, 0f, -2, 1), new Color(0, 0, 1, 1)),
 
-                                                   new Vertex(new Vector4(0,  0.5f, 0, 1), new Color(1, 0, 0, 1)),
+                                                   // v0(r), v1(g), v2(b)
+                                                   new Vertex(new Vector4(0f,  0f, -2, 1), new Color(1, 0, 0, 1)),
+                                                   new Vertex(new Vector4(0,  0.5f, 0, 1), new Color(0, 1, 0, 1)),
                                                    new Vertex(new Vector4(0.5f,  0.5f, 0, 1), new Color(0, 0, 1, 1)),
-                                                   new Vertex(new Vector4(0f,  0f, -2, 1), new Color(0, 1, 0, 1)),
+                                                   
                                                    
                                                };
 

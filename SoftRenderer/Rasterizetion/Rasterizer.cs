@@ -77,10 +77,10 @@ namespace SoftRenderer.Rasterizetion
             }
             else if (pm == PrimitiveMode.Triangles)
             {
-                //Vertex[] list = ClipTriangles(_vertexBuffer.ToArray());
-                //tempVertexList.AddRange(list);
+                Vertex[] list = ClipTriangles(_vertexBuffer.ToArray());
+                tempVertexList.AddRange(list);
 
-                tempVertexList.AddRange(_vertexBuffer.ToArray());
+                //tempVertexList.AddRange(_vertexBuffer.ToArray());
             }
             
             // 从[-1,1] 变换到屏幕左边中
@@ -548,15 +548,15 @@ namespace SoftRenderer.Rasterizetion
                 
                 
                 int numVertexIn = 0;
-                if (v0.pos.z < CLIP_MIN){
+                if (v0.pos.z >= CLIP_MIN){
                     numVertexIn++;
                     
                 }
-                if(v1.pos.z < CLIP_MIN){
+                if(v1.pos.z >= CLIP_MIN){
                     numVertexIn++;
                     
                 }
-                if (v2.pos.z < CLIP_MIN){
+                if (v2.pos.z >= CLIP_MIN){
                     numVertexIn++;
                     
                 }
@@ -566,19 +566,20 @@ namespace SoftRenderer.Rasterizetion
                     // 保证vertex的顺序(顺时针，逆时针)
                     // vIndex0 存储的就是在近平面里面的那个vertex的索引
                     int vIndex0 = 0, vIndex1 = 1, vIndex2 = 2;
-                    if (v0.pos.z < CLIP_MIN)
+                    if (v0.pos.z >= CLIP_MIN)
                     {
                         vIndex0 = 0;
                         vIndex1 = 1;
                         vIndex2 = 2;
                     }
-                    if (v1.pos.z < CLIP_MIN)
+                    if (v1.pos.z >= CLIP_MIN)
                     {
+                        // 确保顶点是统一的顺逆时针
                         vIndex0 = 1;
-                        vIndex1 = 0;
-                        vIndex2 = 2;
+                        vIndex1 = 2;
+                        vIndex2 = 0;
                     }
-                    if (v2.pos.z < CLIP_MIN)
+                    if (v2.pos.z >= CLIP_MIN)
                     {
                         vIndex0 = 2;
                         vIndex1 = 0;
@@ -587,23 +588,27 @@ namespace SoftRenderer.Rasterizetion
                     
                     // 计算第一个交点
                     Vector4 pos01 = vertexArr[vIndex1].pos - vertexArr[vIndex0].pos;
-                    float t = (CLIP_MIN - v0.pos.z) / pos01.z;
-                    float xPos0 = v0.pos.x + pos01.x * t;
-                    float yPos0 = v0.pos.y + pos01.y * t;
+                    float t = (CLIP_MIN - vertexArr[vIndex0].pos.z) / pos01.z;
+                    float xPos0 = vertexArr[vIndex0].pos.x + pos01.x * t;
+                    float yPos0 = vertexArr[vIndex0].pos.y + pos01.y * t;
+                    Color resCol0 = MathUtil.Lerp(vertexArr[vIndex0].color, vertexArr[vIndex1].color, t);
 
                     vertexArr[vIndex1].pos.x = xPos0;
                     vertexArr[vIndex1].pos.y = yPos0;
                     vertexArr[vIndex1].pos.z = CLIP_MIN;
+                    vertexArr[vIndex1].color = resCol0;
 
                     // 计算第二个交点
                     Vector4 pos02 = vertexArr[vIndex2].pos - vertexArr[vIndex0].pos;
-                    t = (CLIP_MIN - v0.pos.z) / pos02.z;
-                    float xPos1 = v0.pos.x + pos02.x * t;
-                    float yPos1 = v0.pos.y + pos02.y * t;
+                    t = (CLIP_MIN - vertexArr[vIndex0].pos.z) / pos02.z;
+                    float xPos1 = vertexArr[vIndex0].pos.x + pos02.x * t;
+                    float yPos1 = vertexArr[vIndex0].pos.y + pos02.y * t;
+                    Color resCol1 = MathUtil.Lerp(vertexArr[vIndex0].color, vertexArr[vIndex2].color, t);
 
                     vertexArr[vIndex2].pos.x = xPos1;
                     vertexArr[vIndex2].pos.y = yPos1;
                     vertexArr[vIndex2].pos.z = CLIP_MIN;
+                    vertexArr[vIndex2].color = resCol1;
 
                     // 以后要计算UV,normal
                     // ...
@@ -615,19 +620,20 @@ namespace SoftRenderer.Rasterizetion
 
                     // vIndex0保存的就是在近平面外面的顶点索引
                     int vIndex0 = 0, vIndex1 = 1, vIndex2 = 2;
-                    if (v0.pos.z >= CLIP_MIN)
+                    if (v0.pos.z < CLIP_MIN)
                     {
                         vIndex0 = 0;
                         vIndex1 = 1;
                         vIndex2 = 2;
                     }
-                    if (v1.pos.z >= CLIP_MIN)
+                    if (v1.pos.z < CLIP_MIN)
                     {
+                        // 确保顶点是统一的顺逆时针
                         vIndex0 = 1;
-                        vIndex1 = 0;
-                        vIndex2 = 2;
+                        vIndex1 = 2;
+                        vIndex2 = 0;
                     }
-                    if (v2.pos.z >= CLIP_MIN)
+                    if (v2.pos.z < CLIP_MIN)
                     {
                         vIndex0 = 2;
                         vIndex1 = 0;
@@ -637,15 +643,21 @@ namespace SoftRenderer.Rasterizetion
 
                     // 计算第一个交点
                     Vector4 pos01 = vertexArr[vIndex1].pos - vertexArr[vIndex0].pos;
-                    float t = (CLIP_MIN - v0.pos.z) / pos01.z;
-                    float xPos0 = v0.pos.x + pos01.x * t;
-                    float yPos0 = v0.pos.y + pos01.y * t;
+                    float t = (CLIP_MIN - vertexArr[vIndex0].pos.z) / pos01.z;
+                    float xPos0 = vertexArr[vIndex0].pos.x + pos01.x * t;
+                    float yPos0 = vertexArr[vIndex0].pos.y + pos01.y * t;
+
+                    // 插值颜色
+                    Color resCol0 = MathUtil.Lerp(vertexArr[vIndex0].color, vertexArr[vIndex1].color, t);
 
                     // 计算第二个交点
                     Vector4 pos02 = vertexArr[vIndex2].pos - vertexArr[vIndex0].pos;
-                    t = (CLIP_MIN - v0.pos.z) / pos02.z;
-                    float xPos1 = v0.pos.x + pos02.x * t;
-                    float yPos1 = v0.pos.y + pos02.y * t;
+                    t = (CLIP_MIN - vertexArr[vIndex0].pos.z) / pos02.z;
+                    float xPos1 = vertexArr[vIndex0].pos.x + pos02.x * t;
+                    float yPos1 = vertexArr[vIndex0].pos.y + pos02.y * t;
+
+                    Color resCol1 = MathUtil.Lerp(vertexArr[vIndex0].color, vertexArr[vIndex2].color, t);
+
 
                     // 以后要计算UV,normal
                     // ...
@@ -658,6 +670,7 @@ namespace SoftRenderer.Rasterizetion
                     vertexArr[vIndex0].pos.x = xPos0;
                     vertexArr[vIndex0].pos.y = yPos0;
                     vertexArr[vIndex0].pos.z = CLIP_MIN;
+                    vertexArr[vIndex0].color = resCol0;
 
                     vertexList.AddRange(vertexArr.ToArray());
 
@@ -666,10 +679,14 @@ namespace SoftRenderer.Rasterizetion
                     vertexArrTemp[vIndex0].pos.x = xPos1;
                     vertexArrTemp[vIndex0].pos.y = yPos1;
                     vertexArrTemp[vIndex0].pos.z = CLIP_MIN;
+                    vertexArrTemp[vIndex0].color = resCol1;
+
 
                     vertexArrTemp[vIndex1].pos.x = xPos0;
                     vertexArrTemp[vIndex1].pos.y = yPos0;
                     vertexArrTemp[vIndex1].pos.z = CLIP_MIN;
+                    vertexArrTemp[vIndex1].color = resCol0;
+
 
                     vertexList.AddRange(vertexArrTemp.ToArray());
                 }

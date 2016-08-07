@@ -51,6 +51,7 @@ namespace SoftRenderer.Renderer
             return c;
         }
 
+
         public System.Drawing.Color TransFormToSystemColor()
         {
             float r = this.r * 255;
