@@ -28,7 +28,9 @@ namespace SoftRenderer.Renderer
                                                    new Vertex(new Vector4(0,  0.5f, 0, 1), new Color(0, 1, 0, 1)),
                                                    new Vertex(new Vector4(0.5f,  0.5f, 0, 1), new Color(0, 0, 1, 1)),
                                                    
-                                                   
+                                                   new Vertex(new Vector4(0.8f,  0f, -2, 1), new Color(1, 0, 0, 1)),
+                                                   new Vertex(new Vector4(0.8f,  0.5f, 0, 1), new Color(0, 1, 0, 1)),
+                                                   new Vertex(new Vector4(1.5f,  0.5f, 0, 1), new Color(0, 0, 1, 1)),
                                                };
 
         //顶点坐标
